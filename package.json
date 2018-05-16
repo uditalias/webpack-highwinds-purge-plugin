@@ -1,0 +1,20 @@
+{
+  "name": "webpack-highwinds-purge-plugin",
+  "version": "0.0.3",
+  "description": "Send purge request to Highwinds CDN",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uditalias/webpack-highwinds-purge-plugin.git"
+  },
+  "author": "Udi Talias",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/uditalias/webpack-highwinds-purge-plugin/issues"
+  },
+  "homepage": "https://github.com/uditalias/webpack-highwinds-purge-plugin#readme",
+  "dependencies": {
+    "request": "2.86.0"
+  }
+}

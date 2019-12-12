@@ -12,14 +12,18 @@ module.exports = class PurgeCDNPlugin {
     }
 
     apply(compiler) {
-        compiler.plugin('after-emit', () => this._afterEmit());
+        if (compiler.hooks) {
+            compiler.hooks.afterEmit.tapAsync(this.constructor.name, (compilation, callback) => this._afterEmit(callback));
+        } else {
+            compiler.plugin('after-emit', (compilation, callback) => this._afterEmit(callback));
+        }
     }
 
-    _afterEmit() {
+    _afterEmit(callback) {
         if (this._config.token) {
-            this._purge(this._config.token);
+            this._purge(this._config.token, callback);
         } else {
-            this._getAccessToken((err, result, body) => this._purge(body.access_token));
+            this._getAccessToken((err, result, body) => this._purge(body.access_token, callback));
         }
     }
 
@@ -38,7 +42,7 @@ module.exports = class PurgeCDNPlugin {
         }, callback);
     }
 
-    _purge(token) {
+    _purge(token, callback) {
 
         console.log('* sending purge request to highwinds...');
         console.log('* purge list:');
@@ -64,6 +68,8 @@ module.exports = class PurgeCDNPlugin {
             } else {
                 console.log('* purge complete ✅');
             }
+
+            callback && callback();
         });
     }
 }

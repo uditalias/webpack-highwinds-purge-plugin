@@ -1,6 +1,6 @@
 {
   "name": "webpack-highwinds-purge-plugin",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "description": "Send purge request to Highwinds CDN",
   "main": "index.js",
   "scripts": {},

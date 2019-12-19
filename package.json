@@ -1,6 +1,6 @@
 {
   "name": "webpack-highwinds-purge-plugin",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Send purge request to Highwinds CDN",
   "main": "index.js",
   "scripts": {},
@@ -15,6 +15,7 @@
   },
   "homepage": "https://github.com/uditalias/webpack-highwinds-purge-plugin#readme",
   "dependencies": {
-    "request": "2.88.0"
-  }
+    "axios": "0.19.0"
+  },
+  "devDependencies": {}
 }

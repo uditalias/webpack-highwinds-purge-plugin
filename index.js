@@ -1,4 +1,9 @@
-const request = require('request');
+const qs = require("querystring");
+const Axios = require("axios").default;
+
+const http = new Axios({
+    baseURL: "https://striketracker.highwinds.com"
+});
 
 module.exports = class PurgeCDNPlugin {
     /**
@@ -19,57 +24,75 @@ module.exports = class PurgeCDNPlugin {
         }
     }
 
-    _afterEmit(callback) {
-        if (this._config.token) {
-            this._purge(this._config.token, callback);
-        } else {
-            this._getAccessToken((err, result, body) => this._purge(body.access_token, callback));
-        }
-    }
+    async _afterEmit(callback) {
 
-    _getAccessToken(callback) {
-        console.log('* requesting highwinds CDN access token...');
+        let token = this._config.token;
 
-        request({
-            method: 'POST',
-            url: 'https://striketracker3.highwinds.com/auth/token',
-            form: {
-                grant_type: 'password',
-                username: this._config.username,
-                password: this._config.password
-            },
-            json: true
-        }, callback);
-    }
+        if (!token) {
+            try {
+                token = await this._getAccessToken();
+            } catch (e) {
+                this._logResponseError(e);
 
-    _purge(token, callback) {
-
-        console.log('* sending purge request to highwinds...');
-        console.log('* purge list:');
-
-        for (let i = 0, len = this._list.length; i < len; i++) {
-            console.log(`* ${this._list[i].url} (recursive: ${this._list[i].recursive || false})`);
-        }
-
-        const params = {
-            method: 'POST',
-            url: `https://striketracker3.highwinds.com/api/v1/accounts/${this._config.accountId}/purge`,
-            headers: {
-                "Authorization": `Bearer ${token}`
-            },
-            json: {
-                "list": this._list
+                return callback();
             }
+        }
+
+        this._purge(token, callback);
+    }
+
+    async _getAccessToken() {
+        console.log('* Requesting highwinds CDN access token...');
+
+        const form = {
+            "grant_type": "password",
+            "username": this._config.username,
+            "password": this._config.password
         };
 
-        request(params, (err, result) => {
-            if (err) {
-                console.log('* purge failed 🤕', err.toString());
-            } else {
-                console.log('* purge complete ✅');
+        const { data } = await http.post("/auth/token", qs.stringify(form), {
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
             }
-
-            callback && callback();
         });
+
+        return data.access_token;
+    }
+
+    async _purge(token, callback) {
+
+        console.log('* Sending purge request to highwinds...');
+        console.log('* Purge list:');
+
+        for (let i = 0, len = this._list.length; i < len; i++) {
+            console.log(`\t- ${this._list[i].url} (recursive: ${this._list[i].recursive || false})`);
+        }
+
+        try {
+
+            await http.post(`/api/accounts/${this._config.accountId}/purge`, {
+                "list": this._list
+            }, {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            console.log('* Purge complete ✅');
+
+        } catch (e) {
+
+            this._logResponseError(e);
+
+        } finally {
+
+            callback();
+
+        }
+    }
+
+    _logResponseError(e) {
+        const { status, statusText } = e.response;
+        console.log(`* Purge failed (${status}: ${statusText}) 🤕`);
     }
 }

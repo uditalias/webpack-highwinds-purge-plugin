@@ -1,7 +1,7 @@
 const qs = require("querystring");
-const Axios = require("axios").default;
+const axios = require("axios").default;
 
-const http = new Axios({
+const http = axios.create({
     baseURL: "https://striketracker.highwinds.com"
 });
 

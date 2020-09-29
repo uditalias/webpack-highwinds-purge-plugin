@@ -18,9 +18,9 @@ module.exports = class PurgeCDNPlugin {
 
     apply(compiler) {
         if (compiler.hooks) {
-            compiler.hooks.afterEmit.tapAsync(this.constructor.name, (compilation, callback) => this._afterEmit(callback));
+            compiler.hooks.done.tapAsync(this.constructor.name, (compilation, callback) => this._afterEmit(callback));
         } else {
-            compiler.plugin('after-emit', (compilation, callback) => this._afterEmit(callback));
+            compiler.plugin('done', (compilation, callback) => this._afterEmit(callback));
         }
     }
 
